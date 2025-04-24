@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Apply Password Policies
+
+echo "Configuring Password Policies..."
+
+# Set maximum password age to 30 days and minimum password age to 1 day
+sudo sed -i 's/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   30/' /etc/login.defs
+sudo sed -i 's/^PASS_MIN_DAYS.*/PASS_MIN_DAYS   1/' /etc/login.defs
+
+# Configure minimum password length to 12 characters and enable complexity
+echo "minlen = 12" | sudo tee -a /etc/security/pwquality.conf
+echo "minclass = 3" | sudo tee -a /etc/security/pwquality.conf
+
+# Enforce password history: remember 10 passwords
+echo "password requisite pam_pwhistory.so remember=10 use_authtok" | sudo tee -a /etc/pam.d/common-password
+
+# Enable PAM password quality module
+sudo sed -i '/^password\s\+requisite\s\+pam_pwquality.so/d' /etc/pam.d/common-password
+echo "password requisite pam_pwquality.so retry=3 minlen=12 minclass=3" | sudo tee -a /etc/pam.d/common-password
+
+# Apply changes to /etc/pam.d/common-auth for account lockout policy
+echo "Configuring Account Lockout Policy..."
+
+# Backup existing common-auth file
+sudo cp /etc/pam.d/common-auth /etc/pam.d/common-auth.bak
+
+# Add lockout policy: 3 invalid attempts, 20-minute lockout, reset after 30 minutes
+echo "auth required pam_tally2.so deny=3 onerr=fail unlock_time=1200 even_deny_root root_unlock_time=1200" | sudo tee -a /etc/pam.d/common-auth
+
+# Apply changes to Kerberos configuration (5-minute clock skew tolerance)
+echo "Configuring Kerberos Policy..."
+
+# Backup existing /etc/krb5.conf
+sudo cp /etc/krb5.conf /etc/krb5.conf.bak
+
+# Add clock skew tolerance setting to Kerberos config
+sudo sed -i '/\[libdefaults\]/a clockskew = 300' /etc/krb5.conf
+
+# Final message
+echo "All policies applied successfully!"
