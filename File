@@ -1,0 +1,37 @@
+README - Password Authentication Issue (Summary)
+Issue
+After running a shell script to enforce password policies, login failed with the error:
+"Sorry, password authentication didn’t work."
+
+Cause
+Improper edits to /etc/pam.d/common-auth and /etc/security/pwquality.conf.
+
+Use of deprecated pam_tally2 module, causing authentication failures.
+
+Solution (Summary)
+Reboot and open the GRUB menu (press Shift or Esc at boot).
+
+Boot into Recovery Mode and drop to root shell.
+
+Remount filesystem:
+
+bash
+Copy code
+mount -o remount,rw /
+Restore backup files:
+
+bash
+Copy code
+cp /etc/pam.d/common-auth.bak /etc/pam.d/common-auth
+cp /etc/krb5.conf.bak /etc/krb5.conf
+(Optional) Fix /etc/security/pwquality.conf if needed.
+
+Reboot the system:
+
+bash
+Copy code
+reboot
+Lesson
+Always backup PAM files before changing.
+
+Test security scripts carefully to avoid system lockout.
