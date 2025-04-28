@@ -1,0 +1,19 @@
+When Account Policy is not working then do these steps
+
+Example Steps for Testing:
+Edit PAM Configuration File:
+
+sudo vim /etc/pam.d/common-auth
+Add the Lockout Policy:
+
+Make sure the line you added is correctly placed:
+auth required pam_tally2.so deny=3 onerr=fail unlock_time=1200 even_deny_root root_unlock_time=1200
+
+Install pam_tally2 if necessary:
+sudo apt-get install libpam-modules
+
+Clear the tally count:
+sudo pam_tally2 --user <username> --reset
+
+Check logs to confirm PAM is working properly:
+tail -f /var/log/auth.log  # On Ubuntu/Debian
