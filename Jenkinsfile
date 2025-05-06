@@ -8,7 +8,6 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                // Clone the repository using the environment variable
                 git url: "${REPO_URL}"
             }
         }
